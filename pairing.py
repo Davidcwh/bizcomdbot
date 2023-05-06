@@ -44,7 +44,7 @@ class Pairing:
     #       - if there is, send reminder message to group chat and return
     # 2. shuffle users to get random angel/mortal pairings
     # 3. send dm to angel about their mortal
-    # 4. return dict of format { angel user id : mortal user id }
+    # 4. return dict of pairing info
     def generate(self, message):
         if message.chat.id not in self.pending_groups.keys():
             return
@@ -65,24 +65,38 @@ class Pairing:
             self.bot.send_message(message.chat.id, text)
             return
 
-         # generating angel - mortal pairings randomly
+        # generating angel - mortal pairings randomly
         random.shuffle(id_list)
-        pairs = dict()
+        angel_to_mortal = dict()
+        user_chat_id = dict()
         for i in range(len(id_list)):
             angel = id_list[i]
             mortal = id_list[(i + 1) % len(id_list)] # wrap around to first user for last user
-            pairs[angel] = mortal
+            angel_to_mortal[angel] = mortal
+            user_chat_id[angel] = self.joined_users[angel]
 
         # send telegram DM to angels their respective mortals
-        for angel_id in pairs.keys():
-            mortal_id = pairs[angel_id]
+        for angel_id in angel_to_mortal.keys():
+            mortal_id = angel_to_mortal[angel_id]
             mortal_username = members[mortal_id]
             self.bot.send_message(angel_id, 'Hi! Your mortal is @' + mortal_username)
+
+            angel_chat_instructions = "To chat with your angel, send messages prefixed with \"/a\" command.\nFor example: \"/a hello angel who you\""
+            mortal_chat_instructions = "To chat with your mortal, send messages prefixed with \"/m\" command.\nFor example: \"/m hello mortal guess who am i\""
+            chat_instructions = angel_chat_instructions + "\n\n" + mortal_chat_instructions
+            self.bot.send_message(angel_id, chat_instructions)
 
         self.pending_groups.pop(message.chat.id)
         self.bot.send_message(message.chat.id, "Angel - Mortal pairings generated! Angels should know their mortals now :)")
 
-        return pairs
+        pairing_info = {
+            "angel_to_mortal": angel_to_mortal,
+            "user_chat_id": user_chat_id,
+            "group_chat_id": message.chat.id,
+            "user_id_list": id_list
+        }
+
+        return pairing_info
   
     # callback function for when the poll is updated with users joining/leaving game
     def callback_query(self, call):
