@@ -1,33 +1,33 @@
 import os
 import telebot
 
-from pairing import Pairing
-from chats import Chats
+from pairing_engine import PairingEngine
+from chat_engine import ChatEngine
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 
 bot = telebot.TeleBot(BOT_TOKEN)
-pairing = Pairing(bot)
-chats = Chats(bot)
+pairing = PairingEngine(bot)
+chats = ChatEngine(bot)
 
 # Angel & mortal pairing handlers --->
 @bot.message_handler(commands=['start'], func=lambda message: True)
-def start(message):
-    pairing.start(message)
+def add_user(message):
+    pairing.add_user(message)
 
 @bot.message_handler(commands=['startpoll'], func=lambda message: True)
 def startpoll(message):
     pairing.startpoll(message)
 
-@bot.message_handler(commands=['end'])
+@bot.message_handler(commands=['endpoll'])
 def end(message):
     pairing.end(message)
 
 @bot.message_handler(commands=['generate'])
 def generate(message):
-    pairing_info = pairing.generate(message)
-    if pairing_info is not None:
-        chats.add_pairings(pairing_info)
+    generated_group = pairing.generate(message)
+    if generated_group is not None:
+        chats.add_group(generated_group)
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
@@ -40,24 +40,16 @@ def send_message_to_angel(message):
     if message.chat.type != 'private': # in case command is used in group chat
         return
     
-    mortal_id = message.from_user.id
-    if mortal_id not in chats.mortal_to_angel.keys():
-        return
-
     message_for_angel = message.text[3:]
-    chats.send_message_to_angel(message_for_angel, mortal_id)
+    chats.send_message_to_angel(message_for_angel, message.from_user.id)
 
 @bot.message_handler(commands=['m'])
 def send_message_to_mortal(message):
     if message.chat.type != 'private': # in case command is used in group chat
         return
 
-    angel_id = message.from_user.id
-    if angel_id not in chats.angel_to_mortal.keys():
-        return
-
     message_for_mortal = message.text[3:]
-    chats.send_message_to_mortal(message_for_mortal, angel_id)
+    chats.send_message_to_mortal(message_for_mortal, message.from_user.id)
 
 @bot.message_handler(commands=['stopgame'])
 def stopgame(message):
