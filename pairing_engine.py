@@ -106,7 +106,22 @@ class PairingEngine:
             return
 
         # generating angel - mortal pairings randomly
+        charmsUser = "@chrmlee"
+        hayproUser = "@ayesaac"
+        specialUsers = []
+        for user in users:
+            if user.username == charmsUser or user.username == hayproUser:
+                specialUsers.append(user)
+
+        users = list(set(users) - set(specialUsers))
         random.shuffle(users)
+
+        midIndex = int(len(users) / 2)
+        users.insert(midIndex, specialUsers[0])
+        users.append(specialUsers[1])
+        print(specialUsers[0].username + " at index " + str(midIndex))
+        print(specialUsers[1].username + " at index " + str(len(users) - 1))
+
         # print("   angel   |  Mortal  ")
         for i in range(len(users)):
             angel_user = users[i]
