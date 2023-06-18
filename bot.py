@@ -10,6 +10,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 pairing = PairingEngine(bot)
 chats = ChatEngine(bot)
 
+@bot.message_handler(commands=['checkhealth'])
+def check(message):
+    bot.send_message(message.chat.id, "bot is up and running :)")
+
 # Angel & mortal pairing handlers --->
 @bot.message_handler(commands=['start'], func=lambda message: True)
 def add_user(message):
