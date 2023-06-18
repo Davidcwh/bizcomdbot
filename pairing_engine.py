@@ -107,13 +107,13 @@ class PairingEngine:
 
         # generating angel - mortal pairings randomly
         random.shuffle(users)
-        print("   angel   |  Mortal  ")
+        # print("   angel   |  Mortal  ")
         for i in range(len(users)):
             angel_user = users[i]
             mortal_user = users[(i + 1) % len(users)] # wrap around to first user for last user
             angel_user.mortal = mortal_user
             mortal_user.angel = angel_user
-            print(angel_user.username + "   |   " + mortal_user.username)
+            # print(angel_user.username + "   |   " + mortal_user.username)
 
         # send telegram DM to angels their respective mortals
         generated_group = Group(message.chat.id)
